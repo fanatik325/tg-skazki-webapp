@@ -1,5 +1,4 @@
 fastapi
 openai
 mangum
-requests
-pydantic
+uvicorn
