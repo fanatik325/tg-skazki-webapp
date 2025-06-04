@@ -1,21 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from mangum import Mangum
 import os
 import json
 import openai
 
 app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"msg": "Привет от FastAPI"}
-
-# 👇 ЭТО ДОБАВЬ
-from mangum import Mangum
 handler = Mangum(app)
 
-# Разрешаем доступ с фронта
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,28 +21,31 @@ prompt_path = "api/prompt.txt"
 user_data_path = "api/user_data.json"
 story_archive_path = "api/story_archive.json"
 
-# OpenAI
+# Ключ OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Загрузка данных
+# Загрузка профилей
 if os.path.exists(user_data_path):
     with open(user_data_path, "r", encoding="utf-8") as f:
         user_profiles = json.load(f)
 else:
     user_profiles = {}
 
+# Загрузка архива сказок
 if os.path.exists(story_archive_path):
     with open(story_archive_path, "r", encoding="utf-8") as f:
         story_archive = json.load(f)
 else:
     story_archive = {}
 
+# Модель запроса
 class StoryRequest(BaseModel):
+    user_id: int
     name: str
     age: int
     interests: str
-    user_id: int
 
+# Получение использованных элементов
 def get_used_elements(user_id: str):
     enemies, helpers, quests = set(), set(), set()
     if user_id in story_archive:
@@ -68,6 +64,7 @@ def get_used_elements(user_id: str):
         "quests": list(quests)
     }
 
+# Сборка промпта
 def build_prompt(name: str, age: str, topic: str, user_id: str):
     with open(prompt_path, "r", encoding="utf-8") as f:
         base_prompt = f.read()
@@ -93,6 +90,7 @@ def build_prompt(name: str, age: str, topic: str, user_id: str):
 
     return base_prompt + personalization + archive_block
 
+# Улучшение сказки
 def improve_story(story: str, age: str, name: str, topic: str):
     prompt = f"""
 Ты — ребёнок {age} лет по имени {name}, для которого писалась эта сказка на тему «{topic}». Вот текст сказки:
@@ -113,6 +111,10 @@ def improve_story(story: str, age: str, name: str, topic: str):
         max_tokens=6000
     )
     return response.choices[0].message.content.strip()
+
+@app.get("/")
+def read_root():
+    return {"msg": "Привет от FastAPI"}
 
 @app.post("/generate")
 async def generate_story(data: StoryRequest):
