@@ -13,7 +13,7 @@ document.getElementById("generate").addEventListener("click", async () => {
 
   tg.MainButton.setText("Генерация...").show().disable();
 
-  const res = await fetch("https://your-backend.vercel.app/generate", {
+const res = await fetch("https://tg-skazki-webapp.vercel.app/generate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

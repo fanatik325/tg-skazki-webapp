@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/main.py",
+      "src": "api/main.py",
       "use": "@vercel/python"
     }
   ],
@@ -10,7 +10,7 @@
     {
       "src": "/generate",
       "methods": ["POST"],
-      "dest": "backend/main.py"
+      "dest": "api/main.py"
     }
   ]
 }
