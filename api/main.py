@@ -7,6 +7,14 @@ import openai
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"msg": "Привет от FastAPI"}
+
+# 👇 ЭТО ДОБАВЬ
+from mangum import Mangum
+handler = Mangum(app)
+
 # Разрешаем доступ с фронта
 app.add_middleware(
     CORSMiddleware,
@@ -16,9 +24,9 @@ app.add_middleware(
 )
 
 # Пути
-prompt_path = "backend/prompt.txt"
-user_data_path = "backend/user_data.json"
-story_archive_path = "backend/story_archive.json"
+prompt_path = "api/prompt.txt"
+user_data_path = "api/user_data.json"
+story_archive_path = "api/story_archive.json"
 
 # OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
